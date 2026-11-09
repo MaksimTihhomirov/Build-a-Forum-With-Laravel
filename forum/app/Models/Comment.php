@@ -1,19 +1,11 @@
 <?php
 
-namespace Database\Factories;
+namespace App\Models;
 
-use App\Models\Post;
-use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-class CommentFactory extends Factory
+class Comment extends Model
 {
-    public function definition(): array
-    {
-        return [
-            'user_id' => User::factory(),
-            'post_id' => Post::factory(),
-            'body' => fake()->paragraph(),
-        ];
-    }
+    use HasFactory;
 }
