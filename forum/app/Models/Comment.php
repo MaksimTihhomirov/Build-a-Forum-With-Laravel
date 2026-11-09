@@ -1,21 +1,19 @@
 <?php
 
-namespace App\Models;
+namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Post;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-class Comment extends Model
+class CommentFactory extends Factory
 {
-    use HasFactory;
-
-    public function user()
+    public function definition(): array
     {
-        return $this->belongsTo(User::class);
-    }
-
-    public function post()
-    {
-        return $this->belongsTo(Post::class);
+        return [
+            'user_id' => User::factory(),
+            'post_id' => Post::factory(),
+            'body' => fake()->paragraph(),
+        ];
     }
 }
