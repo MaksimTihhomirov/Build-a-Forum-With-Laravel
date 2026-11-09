@@ -27,3 +27,9 @@ Route::middleware([
 
 Route::get('/posts', [PostController::class, 'index'])
     ->name('posts.index');
+
+Route::get('/test', function () {
+    return new \App\Http\Resources\UserResource(
+        \App\Models\User::firstOrFail()
+    );
+})->middleware('auth');
