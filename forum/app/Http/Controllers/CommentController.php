@@ -21,4 +21,16 @@ class CommentController extends Controller
 
         return redirect()->route('posts.show', $post);
     }
+
+    public function destroy(Request $request, Comment $comment)
+    {
+        abort_unless(
+            $request->user()?->id === $comment->user_id,
+            403
+        );
+
+        $comment->delete();
+
+        return redirect()->route('posts.show', $comment->post_id);
+    }
 }
