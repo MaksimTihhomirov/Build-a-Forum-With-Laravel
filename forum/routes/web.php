@@ -7,6 +7,10 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+Route::post('/posts/{post}/comments', [CommentController::class, 'store'])
+    ->middleware('auth')
+    ->name('posts.comments.store');
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -34,6 +38,12 @@ Route::get('/posts/{post}', [PostController::class, 'show'])
 
 Route::post('/posts/{post}/comments', [CommentController::class, 'store'])
     ->middleware('auth')
+    ->name('posts.comments.store');
+
+
+
+Route::post('/posts/{post}/comments', [CommentController::class, 'store'])
+    ->middleware('auth')
     ->name('comments.store');
 
 Route::get('/test', function () {
@@ -41,3 +51,7 @@ Route::get('/test', function () {
         \App\Models\User::firstOrFail()
     );
 })->middleware('auth');
+
+Route::post('/posts/{post}/comments', [CommentController::class, 'store'])
+    ->middleware('auth')
+    ->name('posts.comments.store');
