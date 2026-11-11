@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CommentResource;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Inertia\Inertia;
@@ -23,9 +24,15 @@ class PostController extends Controller
 
     public function show(Post $post): Response
     {
+        $post->load('user');
+
         return Inertia::render('Posts/Show', [
-            'post' => PostResource::make(
-                $post->load('user')
+            'post' => PostResource::make($post),
+            'comments' => CommentResource::collection(
+                $post->comments()
+                    ->with('user')
+                    ->latest()
+                    ->paginate(10)
             ),
         ]);
     }

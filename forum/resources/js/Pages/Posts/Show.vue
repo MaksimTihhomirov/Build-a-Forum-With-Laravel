@@ -1,47 +1,51 @@
 
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import Container from '@/Components/Container.vue';
+import Pagination from '@/Components/Pagination.vue';
+import Comment from '@/Components/Comment.vue';
 
 defineProps({
     post: Object,
+    comments: Object,
 });
 </script>
 
 <template>
     <AppLayout title="Post">
-        <Head :title="post.title" />
+        <Container>
+            <h1 class="text-2xl font-bold">
+                {{ post.data.title }}
+            </h1>
 
-        <div class="py-12">
-            <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
+            <p class="mt-2 text-sm text-gray-600">
+                By {{ post.data.user?.name ?? 'Unknown' }}
+            </p>
 
-                <Link
-                    :href="route('posts.index')"
-                    class="text-blue-600 hover:underline"
-                >
-                    ← Back to posts
-                </Link>
-
-                <div class="bg-white shadow rounded-lg p-8 mt-6">
-
-                    <h1 class="text-3xl font-bold text-gray-900">
-                        {{ post.title }}
-                    </h1>
-
-                    <p class="text-sm text-gray-500 mt-3">
-                        By {{ post.user?.name ?? 'Unknown' }}
-                    </p>
-
-                    <p class="text-sm text-gray-400 mt-1">
-                        {{ new Date(post.created_at).toLocaleDateString() }}
-                    </p>
-
-                    <div class="mt-8 text-gray-700 whitespace-pre-line leading-7">
-                        {{ post.body }}
-                    </div>
-
-                </div>
+            <div class="mt-8 whitespace-pre-line">
+                {{ post.data.body }}
             </div>
-        </div>
+
+            <div class="mt-12">
+                <h2 class="text-xl font-semibold">
+                    Comments
+                </h2>
+
+                <ul class="divide-y mt-4">
+                    <li
+                        v-for="comment in comments.data"
+                        :key="comment.id"
+                        class="px-2 py-4"
+                    >
+                        <Comment :comment="comment" />
+                    </li>
+                </ul>
+
+                <Pagination
+                    :meta="comments.meta"
+                    class="mt-2"
+                />
+            </div>
+        </Container>
     </AppLayout>
 </template>
