@@ -2,12 +2,14 @@
 <script setup>
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+import ConfirmDialog from '@/Components/ConfirmDialog.vue';
 
 const props = defineProps({
     comment: Object,
 });
 
 const page = usePage();
+const confirmDialog = ref(null);
 
 const canEdit = computed(() => {
     return page.props.auth?.user?.id === props.comment.user?.id;
@@ -17,6 +19,7 @@ const isEditing = ref(false);
 const editedBody = ref(props.comment.body);
 const error = ref('');
 const isSaving = ref(false);
+const isDeleting = ref(false);
 
 const currentPageQuery = () => {
     const url = new URL(window.location.href);
@@ -37,9 +40,17 @@ const cancelEditing = () => {
     isEditing.value = false;
 };
 
-const updateComment = () => {
+const updateComment = async () => {
     if (!editedBody.value.trim()) {
         error.value = 'Comment cannot be empty.';
+        return;
+    }
+
+    const confirmed = await confirmDialog.value.confirm(
+        'Are you sure you want to update this comment?'
+    );
+
+    if (!confirmed) {
         return;
     }
 
@@ -66,15 +77,26 @@ const updateComment = () => {
     );
 };
 
-const deleteComment = () => {
-    if (confirm('Are you sure you want to delete this comment?')) {
-        router.delete(
-            route('comments.destroy', props.comment.id) + currentPageQuery(),
-            {
-                preserveScroll: true,
-            }
-        );
+const deleteComment = async () => {
+    const confirmed = await confirmDialog.value.confirm(
+        'Are you sure you want to delete this comment?'
+    );
+
+    if (!confirmed) {
+        return;
     }
+
+    isDeleting.value = true;
+
+    router.delete(
+        route('comments.destroy', props.comment.id) + currentPageQuery(),
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                isDeleting.value = false;
+            },
+        }
+    );
 };
 </script>
 
@@ -104,6 +126,7 @@ const deleteComment = () => {
                 <button
                     type="button"
                     @click="cancelEditing"
+                    :disabled="isSaving"
                     class="text-sm text-gray-600 hover:text-gray-800"
                 >
                     Cancel
@@ -131,10 +154,13 @@ const deleteComment = () => {
             <button
                 @click="deleteComment"
                 type="button"
-                class="text-sm text-red-600 hover:text-red-800"
+                :disabled="isDeleting"
+                class="text-sm text-red-600 hover:text-red-800 disabled:opacity-50"
             >
-                Delete
+                {{ isDeleting ? 'Deleting...' : 'Delete' }}
             </button>
         </div>
+
+        <ConfirmDialog ref="confirmDialog" />
     </div>
 </template>
