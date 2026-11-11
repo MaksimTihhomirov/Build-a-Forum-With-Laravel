@@ -7,10 +7,6 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::post('/posts/{post}/comments', [CommentController::class, 'store'])
-    ->middleware('auth')
-    ->name('posts.comments.store');
-
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -40,24 +36,16 @@ Route::post('/posts/{post}/comments', [CommentController::class, 'store'])
     ->middleware('auth')
     ->name('posts.comments.store');
 
-Route::post('/posts/{post}/comments', [CommentController::class, 'store'])
+Route::put('/comments/{comment}', [CommentController::class, 'update'])
     ->middleware('auth')
-    ->name('posts.comments.store');
+    ->name('comments.update');
 
 Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])
     ->middleware('auth')
     ->name('comments.destroy');
-
-Route::post('/posts/{post}/comments', [CommentController::class, 'store'])
-    ->middleware('auth')
-    ->name('comments.store');
 
 Route::get('/test', function () {
     return new \App\Http\Resources\UserResource(
         \App\Models\User::firstOrFail()
     );
 })->middleware('auth');
-
-Route::post('/posts/{post}/comments', [CommentController::class, 'store'])
-    ->middleware('auth')
-    ->name('posts.comments.store');

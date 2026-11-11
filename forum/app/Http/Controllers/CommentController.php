@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\CommentResource;
 use App\Models\Comment;
 use App\Models\Post;
 use Illuminate\Http\Request;
@@ -21,6 +20,22 @@ class CommentController extends Controller
         ]);
 
         return to_route('posts.show', $post);
+    }
+
+    public function update(Request $request, Comment $comment)
+    {
+        $this->authorize('update', $comment);
+
+        $validated = $request->validate([
+            'body' => ['required', 'string', 'max:2500'],
+        ]);
+
+        $comment->update($validated);
+
+        return to_route('posts.show', [
+            'post' => $comment->post_id,
+            'page' => $request->query('page'),
+        ]);
     }
 
     public function destroy(Request $request, Comment $comment)

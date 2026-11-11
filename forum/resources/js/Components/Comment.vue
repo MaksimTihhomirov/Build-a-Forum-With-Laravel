@@ -1,7 +1,7 @@
 
 <script setup>
 import { router, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     comment: Object,
@@ -9,18 +9,67 @@ const props = defineProps({
 
 const page = usePage();
 
-const canDelete = computed(() => {
+const canEdit = computed(() => {
     return page.props.auth?.user?.id === props.comment.user?.id;
 });
 
+const isEditing = ref(false);
+const editedBody = ref(props.comment.body);
+const error = ref('');
+const isSaving = ref(false);
+
+const currentPageQuery = () => {
+    const url = new URL(window.location.href);
+    const currentPage = url.searchParams.get('page');
+
+    return currentPage ? `?page=${currentPage}` : '';
+};
+
+const startEditing = () => {
+    editedBody.value = props.comment.body;
+    error.value = '';
+    isEditing.value = true;
+};
+
+const cancelEditing = () => {
+    editedBody.value = props.comment.body;
+    error.value = '';
+    isEditing.value = false;
+};
+
+const updateComment = () => {
+    if (!editedBody.value.trim()) {
+        error.value = 'Comment cannot be empty.';
+        return;
+    }
+
+    isSaving.value = true;
+    error.value = '';
+
+    router.put(
+        route('comments.update', props.comment.id) + currentPageQuery(),
+        {
+            body: editedBody.value,
+        },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                isEditing.value = false;
+            },
+            onError: (errors) => {
+                error.value = errors.body || 'Could not update comment.';
+            },
+            onFinish: () => {
+                isSaving.value = false;
+            },
+        }
+    );
+};
+
 const deleteComment = () => {
     if (confirm('Are you sure you want to delete this comment?')) {
-        const url = new URL(window.location.href);
-        const currentPage = url.searchParams.get('page');
-
         router.delete(
-            route('comments.destroy', props.comment.id) +
-                (currentPage ? `?page=${currentPage}` : ''),
+            route('comments.destroy', props.comment.id) + currentPageQuery(),
             {
                 preserveScroll: true,
             }
@@ -31,7 +80,38 @@ const deleteComment = () => {
 
 <template>
     <div>
-        <span class="text-sm">
+        <div v-if="isEditing">
+            <textarea
+                v-model="editedBody"
+                rows="3"
+                class="w-full rounded border border-gray-300 p-2 text-sm"
+            ></textarea>
+
+            <p v-if="error" class="mt-1 text-sm text-red-600">
+                {{ error }}
+            </p>
+
+            <div class="mt-2 flex gap-3">
+                <button
+                    type="button"
+                    @click="updateComment"
+                    :disabled="isSaving"
+                    class="text-sm text-blue-600 hover:text-blue-800 disabled:opacity-50"
+                >
+                    {{ isSaving ? 'Saving...' : 'Save' }}
+                </button>
+
+                <button
+                    type="button"
+                    @click="cancelEditing"
+                    class="text-sm text-gray-600 hover:text-gray-800"
+                >
+                    Cancel
+                </button>
+            </div>
+        </div>
+
+        <span v-else class="text-sm">
             {{ comment.body }}
         </span>
 
@@ -39,13 +119,22 @@ const deleteComment = () => {
             By {{ comment.user?.name ?? 'Unknown' }}
         </span>
 
-        <button
-            v-if="canDelete"
-            @click="deleteComment"
-            type="button"
-            class="mt-2 text-sm text-red-600 hover:text-red-800"
-        >
-            Delete
-        </button>
+        <div v-if="canEdit && !isEditing" class="mt-2 flex gap-4">
+            <button
+                @click="startEditing"
+                type="button"
+                class="text-sm text-blue-600 hover:text-blue-800"
+            >
+                Edit
+            </button>
+
+            <button
+                @click="deleteComment"
+                type="button"
+                class="text-sm text-red-600 hover:text-red-800"
+            >
+                Delete
+            </button>
+        </div>
     </div>
 </template>
