@@ -6,11 +6,10 @@ use App\Http\Resources\CommentResource;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Inertia\Inertia;
-use Inertia\Response;
 
 class PostController extends Controller
 {
-    public function index(): Response
+    public function index()
     {
         return Inertia::render('Posts/Index', [
             'posts' => PostResource::collection(
@@ -22,12 +21,12 @@ class PostController extends Controller
         ]);
     }
 
-    public function show(Post $post): Response
+    public function show(Post $post)
     {
         $post->load('user');
 
         return Inertia::render('Posts/Show', [
-            'post' => PostResource::make($post),
+            'post' => PostResource::make($post->refresh()),
             'comments' => CommentResource::collection(
                 $post->comments()
                     ->with('user')
