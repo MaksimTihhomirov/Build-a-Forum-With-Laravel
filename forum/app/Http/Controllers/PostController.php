@@ -20,4 +20,13 @@ class PostController extends Controller
             ),
         ]);
     }
+
+    public function show(Post $post): Response
+    {
+        return Inertia::render('Posts/Show', [
+            'post' => PostResource::make(
+                $post->load('user')
+            ),
+        ]);
+    }
 }
