@@ -15,9 +15,16 @@ const canDelete = computed(() => {
 
 const deleteComment = () => {
     if (confirm('Are you sure you want to delete this comment?')) {
-        router.delete(route('comments.destroy', props.comment.id), {
-            preserveScroll: true,
-        });
+        const url = new URL(window.location.href);
+        const currentPage = url.searchParams.get('page');
+
+        router.delete(
+            route('comments.destroy', props.comment.id) +
+                (currentPage ? `?page=${currentPage}` : ''),
+            {
+                preserveScroll: true,
+            }
+        );
     }
 };
 </script>
