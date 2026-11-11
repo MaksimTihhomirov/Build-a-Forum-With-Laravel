@@ -17,7 +17,7 @@ const form = useForm({
 });
 
 function submit() {
-    form.post(route('comments.store', props.post.data.id), {
+    form.post(route('posts.comments.store', props.post.id), {
         preserveScroll: true,
         onSuccess: () => form.reset('body'),
     });
@@ -28,15 +28,15 @@ function submit() {
     <AppLayout title="Post">
         <Container>
             <h1 class="text-2xl font-bold">
-                {{ post.data.title }}
+                {{ post.title }}
             </h1>
 
             <p class="mt-2 text-sm text-gray-600">
-                By {{ post.data.user?.name ?? 'Unknown' }}
+                By {{ post.user?.name ?? 'Unknown' }}
             </p>
 
             <div class="mt-8 whitespace-pre-line">
-                {{ post.data.body }}
+                {{ post.body }}
             </div>
 
             <div class="mt-12">
@@ -77,7 +77,7 @@ function submit() {
                     </button>
                 </form>
 
-                <ul class="divide-y mt-6">
+                <ul class="mt-6 divide-y">
                     <li
                         v-for="comment in comments.data"
                         :key="comment.id"
