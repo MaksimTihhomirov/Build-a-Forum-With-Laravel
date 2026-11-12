@@ -35,7 +35,7 @@ class PostController extends Controller
         if ($request->route('slug') !== $expectedSlug) {
             return redirect(
                 $post->showRoute($request->query()),
-                302
+                301
             );
         }
 

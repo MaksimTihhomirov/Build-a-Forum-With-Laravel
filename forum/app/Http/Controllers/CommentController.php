@@ -20,7 +20,7 @@ class CommentController extends Controller
             'user_id' => $request->user()->id,
         ]);
 
-        return to_route('posts.show', $post)
+        return redirect($post->showRoute())
             ->with('flash.banner', 'Comment added!')
             ->with('flash.bannerStyle', 'success');
     }
@@ -35,10 +35,11 @@ class CommentController extends Controller
 
         $comment->update($validated);
 
-        return to_route('posts.show', [
-            'post' => $comment->post_id,
-            'page' => $request->query('page'),
-        ])
+        return redirect(
+            $comment->post->showRoute(
+                $request->query()
+            )
+        )
             ->with('flash.banner', 'Comment updated!')
             ->with('flash.bannerStyle', 'success');
     }
@@ -47,12 +48,15 @@ class CommentController extends Controller
     {
         Gate::authorize('delete', $comment);
 
+        $post = $comment->post;
+
         $comment->delete();
 
-        return to_route('posts.show', [
-            'post' => $comment->post_id,
-            'page' => $request->query('page'),
-        ])
+        return redirect(
+            $post->showRoute(
+                $request->query()
+            )
+        )
             ->with('flash.banner', 'Comment deleted!')
             ->with('flash.bannerStyle', 'success');
     }
