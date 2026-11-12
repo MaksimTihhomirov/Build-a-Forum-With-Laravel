@@ -15,7 +15,8 @@ test('it passes a post to the view', function () {
 
     $post->load('user');
 
-    $this->get(route('posts.show', $post))
+    $this->followingRedirects()
+        ->get(route('posts.show', $post))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Posts/Show')
@@ -33,7 +34,8 @@ test('it passes comments to the view', function () {
 
     $comments->load('user');
 
-    $this->get(route('posts.show', $post))
+    $this->followingRedirects()
+        ->get(route('posts.show', $post))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Posts/Show')

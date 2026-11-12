@@ -6,6 +6,7 @@ use App\Http\Resources\CommentResource;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class PostController extends Controller
@@ -27,12 +28,21 @@ class PostController extends Controller
         return Inertia::render('Posts/Create');
     }
 
-    public function show(Post $post)
+    public function show(Request $request, Post $post)
     {
+        $expectedSlug = Str::slug($post->title);
+
+        if ($request->route('slug') !== $expectedSlug) {
+            return redirect(
+                $post->showRoute($request->query()),
+                302
+            );
+        }
+
         $post->load('user');
 
         return Inertia::render('Posts/Show', [
-            'post' => PostResource::make($post->refresh()),
+            'post' => PostResource::make($post),
             'comments' => CommentResource::collection(
                 $post->comments()
                     ->with('user')
@@ -55,6 +65,6 @@ class PostController extends Controller
             'user_id' => $request->user()->id,
         ]);
 
-        return to_route('posts.show', $post);
+        return redirect($post->showRoute());
     }
 }

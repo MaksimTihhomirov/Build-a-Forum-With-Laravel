@@ -37,7 +37,7 @@ Route::post('/posts', [PostController::class, 'store'])
     ->middleware('auth')
     ->name('posts.store');
 
-Route::get('/posts/{post}', [PostController::class, 'show'])
+Route::get('/posts/{post}/{slug?}', [PostController::class, 'show'])
     ->name('posts.show');
 
 Route::post('/posts/{post}/comments', [CommentController::class, 'store'])
