@@ -35,9 +35,10 @@ function submit() {
                 By {{ post.user?.name ?? 'Unknown' }}
             </p>
 
-            <div class="mt-8 whitespace-pre-line">
-                {{ post.body }}
-            </div>
+           <div
+    class="prose mt-8 max-w-none"
+    v-html="post.html"
+></div>
 
             <div class="mt-12">
                 <h2 class="text-xl font-semibold">
