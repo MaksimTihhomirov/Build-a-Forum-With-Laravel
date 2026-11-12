@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 
 /**
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\File;
 class PostFactory extends Factory
 {
     protected $model = Post::class;
+
+    private static ?Collection $fixtures = null;
 
     public function definition(): array
     {
@@ -27,7 +30,9 @@ class PostFactory extends Factory
 
     public function withFixture(): static
     {
-        $posts = collect(File::files(database_path('fixtures/posts')))
+        self::$fixtures ??= collect(
+            File::files(database_path('fixtures/posts'))
+        )
             ->map(fn ($file) => $file->getContents())
             ->map(function (string $contents) {
                 [$title, $body] = explode("\n", $contents, 2);
@@ -38,6 +43,6 @@ class PostFactory extends Factory
                 ];
             });
 
-        return $this->sequence(...$posts->all());
+        return $this->sequence(...self::$fixtures->all());
     }
 }
