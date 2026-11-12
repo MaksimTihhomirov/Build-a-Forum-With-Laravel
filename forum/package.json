@@ -22,5 +22,11 @@
     },
     "optionalDependencies": {
         "@laravel/multiplex": "^0.4.1"
+    },
+    "dependencies": {
+        "@tiptap/markdown": "^3.33.1",
+        "@tiptap/pm": "^3.33.1",
+        "@tiptap/starter-kit": "^3.33.1",
+        "@tiptap/vue-3": "^3.33.1"
     }
 }

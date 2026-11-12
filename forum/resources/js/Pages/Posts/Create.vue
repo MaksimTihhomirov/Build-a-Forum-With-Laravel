@@ -2,6 +2,7 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import Container from '@/Components/Container.vue';
+import MarkdownEditor from '@/Components/MarkdownEditor.vue';
 import { useForm } from '@inertiajs/vue3';
 
 const form = useForm({
@@ -36,25 +37,25 @@ const submit = () => {
                             class="w-full rounded border-gray-300"
                         />
 
-                        <p v-if="form.errors.title" class="mt-1 text-sm text-red-600">
+                        <p
+                            v-if="form.errors.title"
+                            class="mt-1 text-sm text-red-600"
+                        >
                             {{ form.errors.title }}
                         </p>
                     </div>
 
                     <div>
-                        <label for="body" class="block mb-2 font-medium">
+                        <label class="block mb-2 font-medium">
                             Body
                         </label>
 
-                        <textarea
-                            id="body"
-                            v-model="form.body"
-                            rows="8"
-                            placeholder="Give it a great body..."
-                            class="w-full rounded border-gray-300"
-                        ></textarea>
+                        <MarkdownEditor v-model="form.body" />
 
-                        <p v-if="form.errors.body" class="mt-1 text-sm text-red-600">
+                        <p
+                            v-if="form.errors.body"
+                            class="mt-1 text-sm text-red-600"
+                        >
                             {{ form.errors.body }}
                         </p>
                     </div>
