@@ -29,7 +29,11 @@ Route::middleware([
 Route::get('/posts', [PostController::class, 'index'])
     ->name('posts.index');
 
-    Route::post('/posts', [PostController::class, 'store'])
+Route::get('/posts/create', [PostController::class, 'create'])
+    ->middleware('auth')
+    ->name('posts.create');
+
+Route::post('/posts', [PostController::class, 'store'])
     ->middleware('auth')
     ->name('posts.store');
 
