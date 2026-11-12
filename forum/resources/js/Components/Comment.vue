@@ -1,4 +1,3 @@
-
 <script setup>
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -109,7 +108,10 @@ const deleteComment = async () => {
                 class="w-full rounded border border-gray-300 p-2 text-sm"
             ></textarea>
 
-            <p v-if="error" class="mt-1 text-sm text-red-600">
+            <p
+                v-if="error"
+                class="mt-1 text-sm text-red-600"
+            >
                 {{ error }}
             </p>
 
@@ -134,15 +136,20 @@ const deleteComment = async () => {
             </div>
         </div>
 
-        <span v-else class="text-sm">
-            {{ comment.body }}
-        </span>
+        <div
+            v-else
+            class="prose prose-sm max-w-none"
+            v-html="comment.html"
+        ></div>
 
         <span class="first-letter:uppercase block pt-1 text-sm text-gray-600">
             By {{ comment.user?.name ?? 'Unknown' }}
         </span>
 
-        <div v-if="canEdit && !isEditing" class="mt-2 flex gap-4">
+        <div
+            v-if="canEdit && !isEditing"
+            class="mt-2 flex gap-4"
+        >
             <button
                 @click="startEditing"
                 type="button"

@@ -12,6 +12,7 @@ class CommentResource extends JsonResource
         return [
             'id' => $this->id,
             'body' => $this->body,
+            'html' => str($this->body)->markdown(),
             'created_at' => $this->created_at,
             'user' => UserResource::make($this->whenLoaded('user')),
         ];
