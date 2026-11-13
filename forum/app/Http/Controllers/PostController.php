@@ -13,27 +13,38 @@ use Inertia\Inertia;
 
 class PostController extends Controller
 {
-  
-public function index(Request $request)
-{
-    $posts = Post::query()
-        ->with(['user', 'topic'])
-        ->when(
-            $request->query('topic'),
-            fn ($query, $slug) => $query->whereHas(
-                'topic',
-                fn ($topicQuery) => $topicQuery->where('slug', $slug)
-            )
-        )
-        ->latest()
-        ->latest('id')
-        ->paginate(10)
-        ->withQueryString();
+    public function index(Request $request)
+    {
+        $selectedTopic = Topic::query()
+            ->where('slug', $request->query('topic'))
+            ->first();
 
-    return Inertia::render('Posts/Index', [
-        'posts' => PostResource::collection($posts),
-    ]);
-}
+        $posts = Post::query()
+            ->with(['user', 'topic'])
+            ->when(
+                $selectedTopic,
+                fn ($query) => $query->whereBelongsTo($selectedTopic)
+            )
+            ->latest()
+            ->latest('id')
+            ->paginate(10)
+            ->withQueryString();
+
+        return Inertia::render('Posts/Index', [
+            'posts' => PostResource::collection($posts),
+            'topics' => TopicResource::collection(
+                Topic::query()->orderBy('name')->get()
+            ),
+            'selectedTopic' => $selectedTopic
+                ? TopicResource::make($selectedTopic)
+                : null,
+        ]);
+    }
+
+    public function create()
+    {
+        return Inertia::render('Posts/Create');
+    }
 
     public function show(Request $request, Post $post)
     {
@@ -46,7 +57,7 @@ public function index(Request $request)
             );
         }
 
-        $post->load(['user', 'topic']);
+        $post->load('user');
 
         return Inertia::render('Posts/Show', [
             'post' => PostResource::make($post),
