@@ -16,10 +16,17 @@ class PostResource extends JsonResource
             'html' => str($this->body)->markdown(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+
             'user' => [
                 'id' => $this->user->id,
                 'name' => $this->user->name,
             ],
+
+            'topic' => $this->when(
+                $this->resource->relationLoaded('topic')
+                    && $this->topic !== null,
+                fn () => TopicResource::make($this->topic)
+            ),
         ];
     }
 }
