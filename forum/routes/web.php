@@ -29,6 +29,9 @@ Route::middleware([
 Route::get('/posts', [PostController::class, 'index'])
     ->name('posts.index');
 
+Route::get('/topics/{topic:slug}/posts', [PostController::class, 'index'])
+    ->name('topics.posts.index');
+
 Route::get('/posts/create', [PostController::class, 'create'])
     ->middleware('auth')
     ->name('posts.create');

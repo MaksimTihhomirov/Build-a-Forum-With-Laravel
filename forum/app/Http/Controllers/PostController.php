@@ -4,29 +4,36 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\CommentResource;
 use App\Http\Resources\PostResource;
+use App\Http\Resources\TopicResource;
 use App\Models\Post;
+use App\Models\Topic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class PostController extends Controller
 {
-    public function index()
-    {
-        return Inertia::render('Posts/Index', [
-            'posts' => PostResource::collection(
-                Post::query()
-                    ->with(['user', 'topic'])
-                    ->latest()
-                    ->paginate(10)
-            ),
-        ]);
-    }
+  
+public function index(Request $request)
+{
+    $posts = Post::query()
+        ->with(['user', 'topic'])
+        ->when(
+            $request->query('topic'),
+            fn ($query, $slug) => $query->whereHas(
+                'topic',
+                fn ($topicQuery) => $topicQuery->where('slug', $slug)
+            )
+        )
+        ->latest()
+        ->latest('id')
+        ->paginate(10)
+        ->withQueryString();
 
-    public function create()
-    {
-        return Inertia::render('Posts/Create');
-    }
+    return Inertia::render('Posts/Index', [
+        'posts' => PostResource::collection($posts),
+    ]);
+}
 
     public function show(Request $request, Post $post)
     {
