@@ -13,18 +13,17 @@ use Inertia\Inertia;
 
 class PostController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, ?Topic $topic = null)
     {
-        $selectedTopic = Topic::query()
-            ->where('slug', $request->query('topic'))
-            ->first();
+        $selectedTopic = $topic;
+
+        if (! $selectedTopic && $request->filled('topic')) {
+            $selectedTopic = Topic::where('slug', $request->query('topic'))->firstOrFail();
+        }
 
         $posts = Post::query()
             ->with(['user', 'topic'])
-            ->when(
-                $selectedTopic,
-                fn ($query) => $query->whereBelongsTo($selectedTopic)
-            )
+            ->when($selectedTopic, fn ($query) => $query->whereBelongsTo($selectedTopic))
             ->latest()
             ->latest('id')
             ->paginate(10)
@@ -32,9 +31,7 @@ class PostController extends Controller
 
         return Inertia::render('Posts/Index', [
             'posts' => PostResource::collection($posts),
-            'topics' => TopicResource::collection(
-                Topic::query()->orderBy('name')->get()
-            ),
+            'topics' => TopicResource::collection(Topic::all()),
             'selectedTopic' => $selectedTopic
                 ? TopicResource::make($selectedTopic)
                 : null,
@@ -43,7 +40,11 @@ class PostController extends Controller
 
     public function create()
     {
-        return Inertia::render('Posts/Create');
+        return Inertia::render('Posts/Create', [
+            'topics' => TopicResource::collection(
+                Topic::query()->orderBy('name')->get()
+            ),
+        ]);
     }
 
     public function show(Request $request, Post $post)
@@ -51,10 +52,7 @@ class PostController extends Controller
         $expectedSlug = Str::slug($post->title);
 
         if ($request->route('slug') !== $expectedSlug) {
-            return redirect(
-                $post->showRoute($request->query()),
-                301
-            );
+            return redirect($post->showRoute($request->query()), 301);
         }
 
         $post->load('user');
@@ -73,13 +71,13 @@ class PostController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title' => ['required', 'string', 'min:3', 'max:255'],
-            'body' => ['required', 'string', 'min:3', 'max:10000'],
+            'title' => ['required', 'string', 'min:10', 'max:120'],
+            'topic_id' => ['required', 'exists:topics,id'],
+            'body' => ['required', 'string', 'min:100', 'max:10000'],
         ]);
 
         $post = Post::create([
-            'title' => $validated['title'],
-            'body' => $validated['body'],
+            ...$validated,
             'user_id' => $request->user()->id,
         ]);
 
