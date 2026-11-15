@@ -64,6 +64,7 @@ class PostController extends Controller
                     ->with('user')
                     ->latest()
                     ->paginate(10)
+                    ->withQueryString()
             ),
         ]);
     }

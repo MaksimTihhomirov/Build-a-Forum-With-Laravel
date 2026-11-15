@@ -1,24 +1,32 @@
 
 <script setup>
+import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 
-defineProps({
+const props = defineProps({
     meta: {
         type: Object,
         default: () => ({}),
     },
+    only: {
+        type: Array,
+        default: () => [],
+    },
 });
+
+const only = computed(() =>
+    props.only.length === 0 ? [] : [...props.only, 'jetstream']
+);
+
+const links = computed(() => props.meta?.links ?? []);
 </script>
 
 <template>
     <div
-        v-if="meta.links && meta.links.length > 3"
+        v-if="links.length > 3"
         class="mt-6 flex flex-wrap gap-2"
     >
-        <template
-            v-for="(link, index) in meta.links"
-            :key="index"
-        >
+        <template v-for="(link, index) in links" :key="index">
             <span
                 v-if="!link.url"
                 class="rounded border px-3 py-2 text-sm text-gray-400"
@@ -28,7 +36,9 @@ defineProps({
             <Link
                 v-else
                 :href="link.url"
+                :only="only"
                 preserve-scroll
+                preserve-state
                 class="rounded border px-3 py-2 text-sm"
                 :class="
                     link.active
