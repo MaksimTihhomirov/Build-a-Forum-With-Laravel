@@ -5,17 +5,13 @@ import { EditorContent, useEditor } from '@tiptap/vue-3';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from '@tiptap/markdown';
 
-const props = defineProps({
-    modelValue: {
-        type: String,
-        default: '',
-    },
+const model = defineModel({
+    type: String,
+    default: '',
 });
 
-const emit = defineEmits(['update:modelValue']);
-
 const editor = useEditor({
-    content: props.modelValue,
+    content: model.value,
     contentType: 'markdown',
     extensions: [
         StarterKit,
@@ -27,23 +23,20 @@ const editor = useEditor({
         },
     },
     onUpdate: ({ editor }) => {
-        emit('update:modelValue', editor.getMarkdown());
+        model.value = editor.getMarkdown();
     },
 });
 
-watch(
-    () => props.modelValue,
-    (value) => {
-        if (!editor.value) return;
+watch(model, (value) => {
+    if (!editor.value) return;
 
-        if (editor.value.getMarkdown() !== value) {
-            editor.value.commands.setContent(value, {
-                contentType: 'markdown',
-                emitUpdate: false,
-            });
-        }
-    },
-);
+    if (editor.value.getMarkdown() !== value) {
+        editor.value.commands.setContent(value, {
+            contentType: 'markdown',
+            emitUpdate: false,
+        });
+    }
+});
 
 onBeforeUnmount(() => {
     editor.value?.destroy();
