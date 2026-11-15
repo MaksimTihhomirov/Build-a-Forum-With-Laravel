@@ -17,15 +17,12 @@ class PostResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
 
-            'user' => [
-                'id' => $this->user->id,
-                'name' => $this->user->name,
-            ],
+            'user' => UserResource::make(
+                $this->whenLoaded('user')
+            ),
 
-            'topic' => $this->when(
-                $this->resource->relationLoaded('topic')
-                    && $this->topic !== null,
-                fn () => TopicResource::make($this->topic)
+            'topic' => TopicResource::make(
+                $this->whenLoaded('topic')
             ),
         ];
     }
