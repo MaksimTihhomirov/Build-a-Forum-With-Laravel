@@ -4,14 +4,23 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import Container from '@/Components/Container.vue';
 import Pagination from '@/Components/Pagination.vue';
 import Pill from '@/Components/Pill.vue';
-import { Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import TextInput from '@/Components/TextInput.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { Link, router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     posts: Object,
     topics: Object,
     selectedTopic: Object,
+    filters: {
+        type: Object,
+        default: () => ({}),
+    },
 });
+
+const search = ref(props.filters?.query ?? '');
 
 const allTopics = computed(() => {
     return Array.isArray(props.topics)
@@ -24,6 +33,33 @@ const currentTopic = computed(() => {
         ?? props.selectedTopic
         ?? null;
 });
+
+function searchPosts() {
+    router.get(
+        route('posts.index'),
+        {
+            ...(currentTopic.value?.slug
+                ? { topic: currentTopic.value.slug }
+                : {}),
+            ...(search.value.trim()
+                ? { query: search.value.trim() }
+                : {}),
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        }
+    );
+}
+
+function topicUrl(topic = null) {
+    return route('posts.index', {
+        ...(topic ? { topic: topic.slug } : {}),
+        ...(search.value.trim()
+            ? { query: search.value.trim() }
+            : {}),
+    });
+}
 
 function formattedDate(post) {
     return new Intl.RelativeTimeFormat('en', {
@@ -58,7 +94,7 @@ function formattedDate(post) {
 
                 <div class="mt-4 flex flex-wrap gap-2">
                     <Pill
-                        :href="route('posts.index')"
+                        :href="topicUrl()"
                         :active="!currentTopic"
                     >
                         All Posts
@@ -67,12 +103,38 @@ function formattedDate(post) {
                     <Pill
                         v-for="topic in allTopics"
                         :key="topic.id"
-                        :href="route('posts.index', { topic: topic.slug })"
+                        :href="topicUrl(topic)"
                         :active="currentTopic?.id === topic.id"
                     >
                         {{ topic.name }}
                     </Pill>
                 </div>
+
+                <form
+                    class="mt-6"
+                    @submit.prevent="searchPosts"
+                >
+                    <InputLabel
+                        for="query"
+                        value="Search"
+                    />
+
+                    <div class="mt-2 flex gap-2">
+                        <TextInput
+                            id="query"
+                            v-model="search"
+                            type="search"
+                            class="w-full"
+                            placeholder="Search posts..."
+                        />
+
+                        <SecondaryButton
+                            type="submit"
+                        >
+                            Search
+                        </SecondaryButton>
+                    </div>
+                </form>
             </div>
 
             <ul class="divide-y">
@@ -98,7 +160,7 @@ function formattedDate(post) {
                 v-if="posts.data.length === 0"
                 class="py-8 text-center text-gray-500"
             >
-                No posts found in this topic.
+                No posts found.
             </p>
 
             <Pagination

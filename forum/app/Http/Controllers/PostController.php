@@ -30,6 +30,15 @@ class PostController extends Controller
                 $selectedTopic,
                 fn ($query) => $query->whereBelongsTo($selectedTopic)
             )
+            ->when(
+                $request->filled('query'),
+                fn ($query) => $query->where(function ($query) use ($request) {
+                    $search = '%' . $request->query('query') . '%';
+
+                    $query->where('title', 'like', $search)
+                        ->orWhere('body', 'like', $search);
+                })
+            )
             ->latest()
             ->latest('id')
             ->paginate(10)
@@ -37,10 +46,18 @@ class PostController extends Controller
 
         return Inertia::render('Posts/Index', [
             'posts' => PostResource::collection($posts),
-            'topics' => TopicResource::collection(Topic::all()),
+
+            'topics' => TopicResource::collection(
+                Topic::all()
+            ),
+
             'selectedTopic' => $selectedTopic
                 ? TopicResource::make($selectedTopic)
                 : null,
+
+            'filters' => [
+                'query' => $request->query('query', ''),
+            ],
         ]);
     }
 
@@ -70,13 +87,13 @@ class PostController extends Controller
             'post' => PostResource::make($post),
 
             'comments' => CommentResource::collection(
-    $post->comments()
-        ->with('user')
-        ->withCount('likes')
-        ->latest()
-        ->paginate(10)
-        ->withQueryString()
-),
+                $post->comments()
+                    ->with('user')
+                    ->withCount('likes')
+                    ->latest()
+                    ->paginate(10)
+                    ->withQueryString()
+            ),
         ]);
     }
 
