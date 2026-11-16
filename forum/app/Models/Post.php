@@ -43,6 +43,15 @@ class Post extends Model
             'post' => $this->id,
             'slug' => Str::slug($this->title),
             ...$query,
-        ]);
-    }
+        
+            ]);
+   
+        }
+
+
+public function likes(): \Illuminate\Database\Eloquent\Relations\MorphMany
+{
+    return $this->morphMany(Like::class, 'likeable');
+}
+
 }
