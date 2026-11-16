@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Str;
 
 class Post extends Model
@@ -30,6 +31,11 @@ class Post extends Model
         return $this->hasMany(Comment::class);
     }
 
+    public function likes(): MorphMany
+    {
+        return $this->morphMany(Like::class, 'likeable');
+    }
+
     protected function title(): Attribute
     {
         return Attribute::make(
@@ -43,15 +49,6 @@ class Post extends Model
             'post' => $this->id,
             'slug' => Str::slug($this->title),
             ...$query,
-        
-            ]);
-   
-        }
-
-
-public function likes(): \Illuminate\Database\Eloquent\Relations\MorphMany
-{
-    return $this->morphMany(Like::class, 'likeable');
-}
-
+        ]);
+    }
 }

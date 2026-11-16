@@ -12,6 +12,21 @@ class Like extends Model
         'user_id',
     ];
 
+    protected static function booted(): void
+    {
+        static::created(function (Like $like) {
+            if ($like->likeable instanceof Post) {
+                $like->likeable->increment('likes_count');
+            }
+        });
+
+        static::deleted(function (Like $like) {
+            if ($like->likeable instanceof Post) {
+                $like->likeable->decrement('likes_count');
+            }
+        });
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
