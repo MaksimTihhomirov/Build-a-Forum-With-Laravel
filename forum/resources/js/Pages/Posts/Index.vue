@@ -8,7 +8,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import { Link, router } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     posts: Object,
@@ -22,6 +22,13 @@ const props = defineProps({
 
 const search = ref(props.filters?.query ?? '');
 
+watch(
+    () => props.filters?.query,
+    (value) => {
+        search.value = value ?? '';
+    }
+);
+
 const allTopics = computed(() => {
     return Array.isArray(props.topics)
         ? props.topics
@@ -32,6 +39,10 @@ const currentTopic = computed(() => {
     return props.selectedTopic?.data
         ?? props.selectedTopic
         ?? null;
+});
+
+const activeQuery = computed(() => {
+    return props.filters?.query ?? '';
 });
 
 function searchPosts() {
@@ -52,11 +63,28 @@ function searchPosts() {
     );
 }
 
+function clearSearch() {
+    search.value = '';
+
+    router.get(
+        route('posts.index'),
+        {
+            ...(currentTopic.value?.slug
+                ? { topic: currentTopic.value.slug }
+                : {}),
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        }
+    );
+}
+
 function topicUrl(topic = null) {
     return route('posts.index', {
         ...(topic ? { topic: topic.slug } : {}),
-        ...(search.value.trim()
-            ? { query: search.value.trim() }
+        ...(activeQuery.value
+            ? { query: activeQuery.value }
             : {}),
     });
 }
@@ -128,11 +156,18 @@ function formattedDate(post) {
                             placeholder="Search posts..."
                         />
 
-                        <SecondaryButton
-                            type="submit"
-                        >
+                        <SecondaryButton type="submit">
                             Search
                         </SecondaryButton>
+
+                        <button
+                            v-if="activeQuery"
+                            type="button"
+                            @click="clearSearch"
+                            class="rounded-md bg-red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600"
+                        >
+                            Clear
+                        </button>
                     </div>
                 </form>
             </div>
@@ -141,18 +176,29 @@ function formattedDate(post) {
                 <li
                     v-for="post in posts.data"
                     :key="post.id"
-                    class="px-2 py-4"
+                    class="flex items-center justify-between gap-4 px-2 py-4"
                 >
-                    <Link :href="route('posts.show', post.id)">
-                        <span class="font-bold text-lg">
+                    <Link
+                        :href="route('posts.show', post.id)"
+                        class="min-w-0 flex-1"
+                    >
+                        <span class="text-lg font-bold">
                             {{ post.title }}
                         </span>
 
-                        <span class="block mt-1 text-sm text-gray-600">
+                        <span class="mt-1 block text-sm text-gray-600">
                             {{ formattedDate(post) }}
                             by {{ post.user?.name ?? 'Unknown' }}
                         </span>
                     </Link>
+
+                    <Pill
+                        v-if="post.topic"
+                        :href="topicUrl(post.topic)"
+                        class="shrink-0"
+                    >
+                        {{ post.topic.name }}
+                    </Pill>
                 </li>
             </ul>
 
