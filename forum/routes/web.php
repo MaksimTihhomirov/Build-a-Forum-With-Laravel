@@ -1,6 +1,7 @@
 
 <?php
 
+use App\Http\Controllers\LikeController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use Illuminate\Foundation\Application;
@@ -54,6 +55,10 @@ Route::put('/comments/{comment}', [CommentController::class, 'update'])
 Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])
     ->middleware('auth')
     ->name('comments.destroy');
+
+    Route::post('/likes/{type}/{id}', [LikeController::class, 'store'])
+    ->middleware('auth')
+    ->name('likes.store');
 
 Route::get('/test', function () {
     return new \App\Http\Resources\UserResource(
