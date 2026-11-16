@@ -14,7 +14,24 @@ class CommentResource extends JsonResource
             'body' => $this->body,
             'html' => str($this->body)->markdown(),
             'created_at' => $this->created_at,
-            'user' => UserResource::make($this->whenLoaded('user')),
+
+            'likes_count' => $this->likes_count ?? 0,
+
+            'can_like' => $request->user()
+                ? ! $this->likes()
+                    ->where('user_id', $request->user()->id)
+                    ->exists()
+                : false,
+
+            'can_unlike' => $request->user()
+                ? $this->likes()
+                    ->where('user_id', $request->user()->id)
+                    ->exists()
+                : false,
+
+            'user' => UserResource::make(
+                $this->whenLoaded('user')
+            ),
         ];
     }
 }

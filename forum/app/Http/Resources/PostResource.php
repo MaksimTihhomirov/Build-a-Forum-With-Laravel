@@ -17,6 +17,20 @@ class PostResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
 
+            'likes_count' => $this->likes_count ?? 0,
+
+            'can_like' => $request->user()
+                ? ! $this->likes()
+                    ->where('user_id', $request->user()->id)
+                    ->exists()
+                : false,
+
+            'can_unlike' => $request->user()
+                ? $this->likes()
+                    ->where('user_id', $request->user()->id)
+                    ->exists()
+                : false,
+
             'user' => UserResource::make(
                 $this->whenLoaded('user')
             ),

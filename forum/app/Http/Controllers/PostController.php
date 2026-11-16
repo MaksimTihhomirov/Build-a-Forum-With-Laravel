@@ -18,12 +18,18 @@ class PostController extends Controller
         $selectedTopic = $topic;
 
         if (! $selectedTopic && $request->filled('topic')) {
-            $selectedTopic = Topic::where('slug', $request->query('topic'))->firstOrFail();
+            $selectedTopic = Topic::where(
+                'slug',
+                $request->query('topic')
+            )->firstOrFail();
         }
 
         $posts = Post::query()
             ->with(['user', 'topic'])
-            ->when($selectedTopic, fn ($query) => $query->whereBelongsTo($selectedTopic))
+            ->when(
+                $selectedTopic,
+                fn ($query) => $query->whereBelongsTo($selectedTopic)
+            )
             ->latest()
             ->latest('id')
             ->paginate(10)
@@ -52,20 +58,25 @@ class PostController extends Controller
         $expectedSlug = Str::slug($post->title);
 
         if ($request->route('slug') !== $expectedSlug) {
-            return redirect($post->showRoute($request->query()), 301);
+            return redirect(
+                $post->showRoute($request->query()),
+                301
+            );
         }
 
-        $post->load('user');
+        $post->load(['user', 'topic']);
 
         return Inertia::render('Posts/Show', [
             'post' => PostResource::make($post),
+
             'comments' => CommentResource::collection(
-                $post->comments()
-                    ->with('user')
-                    ->latest()
-                    ->paginate(10)
-                    ->withQueryString()
-            ),
+    $post->comments()
+        ->with('user')
+        ->withCount('likes')
+        ->latest()
+        ->paginate(10)
+        ->withQueryString()
+),
         ]);
     }
 

@@ -1,4 +1,3 @@
-
 <?php
 
 use App\Http\Resources\CommentResource;
@@ -13,7 +12,7 @@ uses(RefreshDatabase::class);
 test('it passes a post to the view', function () {
     $post = Post::factory()->create();
 
-    $post->load('user');
+    $post->load(['user', 'topic']);
 
     $this->followingRedirects()
         ->get(route('posts.show', $post))
@@ -27,12 +26,10 @@ test('it passes a post to the view', function () {
 test('it passes comments to the view', function () {
     $post = Post::factory()->create();
 
-    $comments = Comment::factory()
+    Comment::factory()
         ->count(2)
         ->for($post)
         ->create();
-
-    $comments->load('user');
 
     $this->followingRedirects()
         ->get(route('posts.show', $post))
@@ -44,6 +41,7 @@ test('it passes comments to the view', function () {
                 CommentResource::collection(
                     $post->comments()
                         ->with('user')
+                        ->withCount('likes')
                         ->latest()
                         ->paginate(10)
                 )

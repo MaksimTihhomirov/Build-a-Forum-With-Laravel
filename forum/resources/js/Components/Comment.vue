@@ -27,6 +27,7 @@ const editedBody = ref(props.comment.body);
 const error = ref('');
 const isSaving = ref(false);
 const isDeleting = ref(false);
+const isLiking = ref(false);
 
 const currentPageQuery = () => {
     return props.currentPage > 1
@@ -100,6 +101,41 @@ const deleteComment = async () => {
         }
     );
 };
+
+const likeComment = () => {
+    if (isLiking.value) return;
+
+    isLiking.value = true;
+
+    router.post(
+        route('likes.store', ['comment', props.comment.id]) +
+            currentPageQuery(),
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                isLiking.value = false;
+            },
+        }
+    );
+};
+
+const unlikeComment = () => {
+    if (isLiking.value) return;
+
+    isLiking.value = true;
+
+    router.delete(
+        route('likes.destroy', ['comment', props.comment.id]) +
+            currentPageQuery(),
+        {
+            preserveScroll: true,
+            onFinish: () => {
+                isLiking.value = false;
+            },
+        }
+    );
+};
 </script>
 
 <template>
@@ -142,9 +178,36 @@ const deleteComment = async () => {
             v-html="comment.html"
         ></div>
 
-        <span class="first-letter:uppercase block pt-1 text-sm text-gray-600">
+        <span class="block pt-1 text-sm text-gray-600">
             By {{ comment.user?.name ?? 'Unknown' }}
         </span>
+
+        <div class="mt-3 flex items-center gap-3">
+            <span class="text-sm text-gray-500">
+                {{ comment.likes_count ?? 0 }}
+                {{ comment.likes_count === 1 ? 'like' : 'likes' }}
+            </span>
+
+            <button
+                v-if="comment.can_like"
+                type="button"
+                @click="likeComment"
+                :disabled="isLiking"
+                class="rounded-md bg-indigo-600 px-3 py-1 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+            >
+                Like
+            </button>
+
+            <button
+                v-if="comment.can_unlike"
+                type="button"
+                @click="unlikeComment"
+                :disabled="isLiking"
+                class="rounded-md bg-red-600 px-3 py-1 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+            >
+                Unlike
+            </button>
+        </div>
 
         <div v-if="canEdit && !isEditing" class="mt-2 flex gap-4">
             <button

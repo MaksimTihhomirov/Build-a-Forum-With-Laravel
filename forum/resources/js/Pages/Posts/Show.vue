@@ -5,7 +5,7 @@ import Container from '@/Components/Container.vue';
 import Pagination from '@/Components/Pagination.vue';
 import Comment from '@/Components/Comment.vue';
 import InputError from '@/Components/InputError.vue';
-import { useForm } from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
     post: Object,
@@ -22,6 +22,25 @@ function submit() {
         onSuccess: () => form.reset('body'),
     });
 }
+
+function likePost() {
+    router.post(
+        route('likes.store', ['post', props.post.id]),
+        {},
+        {
+            preserveScroll: true,
+        }
+    );
+}
+
+function unlikePost() {
+    router.delete(
+        route('likes.destroy', ['post', props.post.id]),
+        {
+            preserveScroll: true,
+        }
+    );
+}
 </script>
 
 <template>
@@ -35,6 +54,31 @@ function submit() {
                 <p class="mt-2 text-sm text-gray-600">
                     By {{ post.user?.name ?? 'Unknown' }}
                 </p>
+
+                <div class="mt-4 flex items-center gap-3">
+                    <span class="text-sm text-gray-600">
+                        {{ post.likes_count ?? 0 }}
+                        {{ post.likes_count === 1 ? 'like' : 'likes' }}
+                    </span>
+
+                    <button
+                        v-if="post.can_like"
+                        type="button"
+                        @click="likePost"
+                        class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+                    >
+                        Like Post
+                    </button>
+
+                    <button
+                        v-if="post.can_unlike"
+                        type="button"
+                        @click="unlikePost"
+                        class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                    >
+                        Unlike Post
+                    </button>
+                </div>
 
                 <div
                     class="prose mt-8 max-w-none"
@@ -86,9 +130,9 @@ function submit() {
                             class="px-2 py-4"
                         >
                             <Comment
-    :comment="comment"
-    :current-page="comments.meta.current_page"
-/>
+                                :comment="comment"
+                                :current-page="comments.meta.current_page"
+                            />
                         </li>
                     </ul>
 
