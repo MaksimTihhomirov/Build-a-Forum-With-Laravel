@@ -60,6 +60,10 @@ Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])
     ->middleware('auth')
     ->name('likes.store');
 
+    Route::delete('/likes/{type}/{id}', [\App\Http\Controllers\LikeController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('likes.destroy');
+    
 Route::get('/test', function () {
     return new \App\Http\Resources\UserResource(
         \App\Models\User::firstOrFail()

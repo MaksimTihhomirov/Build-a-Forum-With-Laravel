@@ -4,14 +4,16 @@ namespace App\Policies;
 
 use App\Models\Like;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
 
 class LikePolicy
 {
-    public function create(User $user, Model $likeable): bool
+    public function create(User $user): bool
     {
-        return ! $likeable->likes()
-            ->where('user_id', $user->id)
-            ->exists();
+        return true;
+    }
+
+    public function delete(User $user, Like $like): bool
+    {
+        return $like->user_id === $user->id;
     }
 }
