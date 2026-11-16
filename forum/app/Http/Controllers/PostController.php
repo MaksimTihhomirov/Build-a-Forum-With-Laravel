@@ -24,25 +24,31 @@ class PostController extends Controller
             )->firstOrFail();
         }
 
-        $posts = Post::query()
-            ->with(['user', 'topic'])
-            ->when(
-                $selectedTopic,
-                fn ($query) => $query->whereBelongsTo($selectedTopic)
-            )
-            ->when(
-                $request->filled('query'),
-                fn ($query) => $query->where(function ($query) use ($request) {
-                    $search = '%' . $request->query('query') . '%';
+        $search = trim((string) $request->query('query', ''));
 
-                    $query->where('title', 'like', $search)
-                        ->orWhere('body', 'like', $search);
-                })
-            )
-            ->latest()
-            ->latest('id')
-            ->paginate(10)
-            ->withQueryString();
+        if ($search !== '') {
+            $searchQuery = Post::search($search);
+
+            if ($selectedTopic) {
+                $searchQuery->where('topic_id', $selectedTopic->id);
+            }
+
+            $posts = $searchQuery
+                ->query(fn ($query) => $query->with(['user', 'topic']))
+                ->paginate(10)
+                ->withQueryString();
+        } else {
+            $posts = Post::query()
+                ->with(['user', 'topic'])
+                ->when(
+                    $selectedTopic,
+                    fn ($query) => $query->whereBelongsTo($selectedTopic)
+                )
+                ->latest()
+                ->latest('id')
+                ->paginate(10)
+                ->withQueryString();
+        }
 
         return Inertia::render('Posts/Index', [
             'posts' => PostResource::collection($posts),
@@ -56,7 +62,7 @@ class PostController extends Controller
                 : null,
 
             'filters' => [
-                'query' => $request->query('query', ''),
+                'query' => $search,
             ],
         ]);
     }
